@@ -1,0 +1,8 @@
+{
+  "name": "商品搜尋",
+  "short_name": "搜尋",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}
