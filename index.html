@@ -29,15 +29,27 @@
     <div id="results"></div>
 
     <script>
-        // 註冊 Service Worker，並限制範圍
+        // 解除舊版 Service Worker，並註冊新的 Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/json1015/service-worker.js', {
-                scope: '/json1015/' // 限制範圍在 /json1015/
-            })
-            .then(reg => console.log("Service Worker 已註冊，範圍: /json1015/"))
-            .catch(err => console.log("Service Worker 註冊失敗", err));
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                registrations.forEach((registration) => {
+                    if (registration.scope === 'https://david-1020.github.io/') {
+                        registration.unregister().then(() => {
+                            console.log('舊版 Service Worker 已解除註冊');
+                        });
+                    }
+                });
+            }).then(() => {
+                // 註冊新的 Service Worker 並限制範圍在 /json1015/
+                navigator.serviceWorker.register('/json1015/service-worker.js', { scope: '/json1015/' })
+                    .then((registration) => {
+                        console.log('新的 Service Worker 已註冊，範圍: /json1015/');
+                    })
+                    .catch((err) => console.log('Service Worker 註冊失敗', err));
+            });
         }
 
+        // 搜尋功能
         function search() {
             const query = document.getElementById("searchInput").value.toLowerCase();
             const jsonFilePath = 'latest.json'; // 固定 JSON 檔案名稱
@@ -61,6 +73,7 @@
                 });
         }
 
+        // 將搜尋結果顯示為表格
         function displayResults(results) {
             if (results.length === 0) {
                 document.getElementById("results").innerHTML = "<p>找不到符合條件的商品。</p>";
