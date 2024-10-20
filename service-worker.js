@@ -1,44 +1,43 @@
-const CACHE_NAME = "pwa-cache-v1";
-const urlsToCache = [
-  "/index.html",
-  "/latest.json", // 您的商品數據
-  "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png"
-];
+const CACHE_NAME = 'json1015-cache-v1';
 
-// 安裝 Service Worker 並緩存所需資源
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-// 攔截網絡請求並從緩存中提供資源
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
-  );
-});
-
-// 更新 Service Worker 並清除舊的緩存
-self.addEventListener("activate", event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            return caches.delete(cacheName);
-          }
+self.addEventListener('install', (event) => {
+    console.log('Service Worker 安裝');
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll([
+                '/json1015/',
+                '/json1015/index.html',
+                '/json1015/manifest.json',
+                '/json1015/latest.json',
+                '/json1015/styles.css',
+                '/json1015/app.js',
+            ]);
         })
-      );
-    })
-  );
+    );
+    self.skipWaiting(); // 強制立即啟用
+});
+
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker 啟用');
+    event.waitUntil(
+        caches.keys().then((keys) =>
+            Promise.all(
+                keys.map((key) => {
+                    if (key !== CACHE_NAME) {
+                        console.log('刪除舊快取:', key);
+                        return caches.delete(key);
+                    }
+                })
+            )
+        )
+    );
+    return self.clients.claim(); // 立即控制所有客戶端
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
+    );
 });
